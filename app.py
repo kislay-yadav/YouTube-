@@ -5,6 +5,7 @@ import yt_dlp
 
 app = Flask(__name__)
 DOWNLOAD_FOLDER = "downloads"
+COOKIE_FILE = "cookies.txt"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
 @app.route('/')
@@ -28,21 +29,22 @@ def download_video():
             'format': 'bestvideo+bestaudio/best',
             'quiet': True,
             'merge_output_format': 'mp4',
+            'cookiefile': COOKIE_FILE,  # ⬅️ use uploaded cookies.txt
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
-            filename = ydl.prepare_filename(info).replace('.webm', '.mp4')  # fix extension
-            title = info.get("title", "video")
+            downloaded_path = ydl.prepare_filename(info).replace('.webm', '.mp4')
+            title = info.get('title', 'video')
 
-        return jsonify({'filename': os.path.basename(filename), 'title': title})
+        return jsonify({'filename': os.path.basename(downloaded_path), 'title': title})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/get/<filename>')
 def get_file(filename):
-    filepath = os.path.join(DOWNLOAD_FOLDER, filename)
-    return send_file(filepath, as_attachment=True)
+    path = os.path.join(DOWNLOAD_FOLDER, filename)
+    return send_file(path, as_attachment=True)
 
 if __name__ == '__main__':
     import os
