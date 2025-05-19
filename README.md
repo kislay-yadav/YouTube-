@@ -1,3 +1,13 @@
-# YouTube Video Downloader
+# YouTube Video Downloader (Flask + Pytube)
 
-A web-based YouTube downloader using Flask and Pytube.
+A simple and clean web-based YouTube downloader built using:
+
+- Python (Flask)
+- HTML + CSS + JavaScript
+- Pytube
+
+## 🔧 Setup
+
+```bash
+pip install flask pytube
+python app.py
