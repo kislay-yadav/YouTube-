@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, send_file, jsonify
-from pytube import YouTube
 import os
 import uuid
+import yt_dlp
 
 app = Flask(__name__)
 DOWNLOAD_FOLDER = "downloads"
@@ -20,12 +20,22 @@ def download_video():
         return jsonify({'error': 'URL is required'}), 400
 
     try:
-        yt = YouTube(url)
-        stream = yt.streams.get_highest_resolution()
-        filename = f"{uuid.uuid4()}.mp4"
-        filepath = os.path.join(DOWNLOAD_FOLDER, filename)
-        stream.download(output_path=DOWNLOAD_FOLDER, filename=filename)
-        return jsonify({'filename': filename, 'title': yt.title})
+        unique_id = str(uuid.uuid4())
+        output_template = os.path.join(DOWNLOAD_FOLDER, f"{unique_id}.%(ext)s")
+
+        ydl_opts = {
+            'outtmpl': output_template,
+            'format': 'bestvideo+bestaudio/best',
+            'quiet': True,
+            'merge_output_format': 'mp4',
+        }
+
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+            filename = ydl.prepare_filename(info).replace('.webm', '.mp4')  # fix extension
+            title = info.get("title", "video")
+
+        return jsonify({'filename': os.path.basename(filename), 'title': title})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
