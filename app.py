@@ -16,6 +16,7 @@ def index():
 def download_video():
     data = request.get_json()
     url = data.get('url')
+    quality = data.get('quality', 'bestvideo+bestaudio/best')
 
     if not url:
         return jsonify({'error': 'URL is required'}), 400
@@ -26,10 +27,10 @@ def download_video():
 
         ydl_opts = {
             'outtmpl': output_template,
-            'format': 'bestvideo+bestaudio/best',
+            'format': quality,
             'quiet': True,
             'merge_output_format': 'mp4',
-            'cookiefile': COOKIE_FILE,  # ⬅️ use uploaded cookies.txt
+            'cookiefile': COOKIE_FILE
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -47,6 +48,5 @@ def get_file(filename):
     return send_file(path, as_attachment=True)
 
 if __name__ == '__main__':
-    import os
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
