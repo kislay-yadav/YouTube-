@@ -1,21 +1,22 @@
 async function download() {
   const url = document.getElementById('url').value;
+  const quality = document.getElementById('quality').value;
   const message = document.getElementById('message');
   const loader = document.getElementById('loader');
 
   if (!url) {
-    message.textContent = "Please enter a YouTube URL.";
+    message.textContent = "Please enter a valid YouTube URL.";
     return;
   }
 
   loader.style.display = 'block';
-  message.textContent = "";
+  message.textContent = "Starting download...";
 
   try {
     const response = await fetch('/download', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url })
+      body: JSON.stringify({ url, quality })
     });
 
     const data = await response.json();
@@ -29,6 +30,6 @@ async function download() {
     }
   } catch (err) {
     loader.style.display = 'none';
-    message.textContent = `❌ Error: ${err.message}`;
+    message.textContent = `❌ Request failed: ${err.message}`;
   }
 }
